@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Linking } from 'react-native';
 import { supabase } from '../../../Supabase/supabaseClient';
+import { CartContext } from '../../contexts/CartContext';
 
 const PAYMENT_CHECKOUT_URL = 'https://buy.stripe.com/test_14AeV5cyU1zC9teau25AQ00'; // Reemplaza por tu URL real
 
@@ -12,6 +13,8 @@ const SecurePaymentScreen = ({ navigation, route }) => {
   const [cardExp, setCardExp] = useState('');
   const [cardCVC, setCardCVC] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hasPaid, setHasPaid] = useState(false);
+  const { clearCart } = useContext(CartContext);
 
   // Validar usuario
   const handleValidateUser = async () => {
@@ -78,10 +81,27 @@ const SecurePaymentScreen = ({ navigation, route }) => {
       <View style={styles.bottomContainer}>
         <Text style={styles.welcomeTitle}>Hola.</Text>
         <Text style={styles.welcomeSubtitle}>Serás redirigido a la web de pago.</Text>
-        <TouchableOpacity style={styles.startButton} onPress={() => Linking.openURL(PAYMENT_CHECKOUT_URL)}>
-          <Text style={styles.startButtonText}>Ir a la web de pago.</Text>
+        <TouchableOpacity
+          style={[styles.startButton, hasPaid && { backgroundColor: '#ccc' }]}
+          onPress={() => {
+            if (!hasPaid) {
+              Linking.openURL(PAYMENT_CHECKOUT_URL);
+              setHasPaid(true);
+            }
+          }}
+          disabled={hasPaid}
+        >
+          <Text style={styles.startButtonText}>
+            {hasPaid ? 'Ya redirigido al pago' : 'Ir a la web de pago.'}
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.replace('Home')}>
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => {
+            clearCart();
+            navigation.replace('Home');
+          }}
+        >
           <Text style={styles.cancelButtonText}>Cancelar y volver al inicio</Text>
         </TouchableOpacity>
       </View>

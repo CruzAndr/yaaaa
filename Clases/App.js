@@ -1,3 +1,5 @@
+import AccountRecoveryScreen from './screens/AccountRecoveryScreen';
+import AuditLogScreen from './screens/AuditLogScreen';
 import ConsultarUsuariosScreen from './screens/ConsultarUsuariosScreen';
 import OrderConfirmationScreen from './screens/OrderConfirmationScreen';
 import CartScreen from './screens/CartScreen';
@@ -12,6 +14,7 @@ import AERecorridoOptScreen from '../AE/AERecorridoOptScreen';
 import ProviderRegisterScreen from '../AE/ProviderRegisterScreen';
 import ProveedorGestionScreen from './screens/ProveedorGestionScreen';
 import React, { useState, useEffect } from 'react';
+import RoleChangeScreen from './screens/RoleChangeScreen';
 import { CartProvider } from './contexts/CartContext';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -96,6 +99,9 @@ export default function App() {
           <Stack.Screen name="ConsultarUsuarios" component={ConsultarUsuariosScreen} />
           <Stack.Screen name="AprobarProveedorScreen" component={ProveedorGestionScreen} />
           <Stack.Screen name="AprobarPlatillosScreen" component={AEMenuGestionScreen} />
+          <Stack.Screen name="RoleChangeScreen" component={RoleChangeScreen} options={{ title: 'Gestionar roles de usuario' }} />
+          <Stack.Screen name="AuditLogScreen" component={AuditLogScreen} options={{ title: 'Bitácora de auditoría' }} />
+          <Stack.Screen name="AccountRecoveryScreen" component={AccountRecoveryScreen} options={{ title: 'Recuperar cuenta bloqueada' }} />
         </Stack.Navigator>
       </NavigationContainer>
     </CartProvider>

@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { supabase } from '../../../Supabase/supabaseClient';
 
 const TwoFactorAuthScreen = ({ navigation }) => {
-  const [cedula, setCedula] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [step, setStep] = useState(1);
-  const [user, setUser] = useState(null);
-  const [code, setCode] = useState('');
   const [method, setMethod] = useState('');
 
   // Paso 1: Validar cédula y nombre
@@ -72,66 +67,50 @@ const TwoFactorAuthScreen = ({ navigation }) => {
     }
   };
 
+  // Nueva función para manejar la acción según el método seleccionado
+  const handleMethodAction = async (selected) => {
+    setMethod(selected);
+    if (selected === 'biometric') {
+      try {
+        const result = await LocalAuthentication.authenticateAsync({ promptMessage: 'Confirma tu identidad' });
+        if (result.success) {
+          Alert.alert('Acceso concedido', 'Autenticación biométrica exitosa.');
+          navigation.replace('SecurePaymentScreen');
+        } else {
+          Alert.alert('Error', 'Autenticación biométrica fallida.');
+        }
+      } catch {
+        Alert.alert('Error', 'No se pudo iniciar la autenticación biométrica.');
+      }
+    } else if (selected === 'code') {
+      Alert.alert('Actualmente, fuera de servicio.');
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Autenticación de Doble Factor</Text>
-      {step === 1 && (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Cédula"
-            value={cedula}
-            onChangeText={setCedula}
-            keyboardType="numeric"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre completo"
-            value={nombre}
-            onChangeText={setNombre}
-          />
-          <TouchableOpacity style={styles.button} onPress={handleValidateUser}>
-            <Text style={styles.buttonText}>Validar usuario</Text>
-          </TouchableOpacity>
-        </>
-      )}
-      {step === 2 && (
-        <>
-          <Text style={styles.subtitle}>Selecciona método de doble factor:</Text>
-          <View style={styles.methodRow}>
-            <TouchableOpacity
-              style={[styles.methodButton, method === 'code' && styles.selected]}
-              onPress={() => setMethod('code')}
-            >
-              <Text>Código temporal</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.methodButton, method === 'biometric' && styles.selected]}
-              onPress={() => setMethod('biometric')}
-            >
-              <Text>Biométrico</Text>
-            </TouchableOpacity>
-          </View>
-          {method === 'code' && (
-            <>
-              <TouchableOpacity style={[styles.button, { marginBottom: 8 }]} onPress={handleSendCode}>
-                <Text style={styles.buttonText}>Enviar código al correo</Text>
-              </TouchableOpacity>
-              <TextInput
-                style={styles.input}
-                placeholder="Código temporal"
-                value={code}
-                onChangeText={setCode}
-                keyboardType="numeric"
-                maxLength={6}
-              />
-            </>
-          )}
-          <TouchableOpacity style={styles.button} onPress={handleSecondFactor}>
-            <Text style={styles.buttonText}>Validar segundo factor</Text>
-          </TouchableOpacity>
-        </>
-      )}
+      {/* Logo */}
+      <View style={styles.logoWrapper}>
+        <Image source={require('../../../assets/logo.png')} style={styles.logo} />
+      </View>
+      <Text style={styles.title}>Método de verificación.</Text>
+      <Text style={styles.subtitle}>Debemos verificar tu información digitada. ¿Qué método eliges?</Text>
+      <View style={styles.optionsWrapper}>
+        <TouchableOpacity
+          style={[styles.optionBtn, method === 'biometric' && styles.optionBtnActive]}
+          onPress={() => handleMethodAction('biometric')}
+        >
+          <Text style={[styles.optionText, method === 'biometric' && styles.optionTextActive]}>Huella digital.</Text>
+          <View style={[styles.circle, method === 'biometric' && styles.circleActive]} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.optionBtn, styles.optionBtnAlt, method === 'code' && styles.optionBtnActiveAlt]}
+          onPress={() => handleMethodAction('code')}
+        >
+          <Text style={[styles.optionText, styles.optionTextAlt, method === 'code' && styles.optionTextActiveAlt]}>Correo universitario.</Text>
+          <View style={[styles.circle, styles.circleAlt, method === 'code' && styles.circleActiveAlt]} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -139,58 +118,99 @@ const TwoFactorAuthScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: '#fff',
     alignItems: 'center',
-    backgroundColor: '#f5f6fa',
-    padding: 20,
+    paddingTop: 60,
+  },
+  logoWrapper: {
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginBottom: 10,
   },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#222',
+    textAlign: 'center',
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    marginBottom: 10,
+    color: '#444',
+    textAlign: 'center',
+    marginBottom: 30,
+    paddingHorizontal: 24,
   },
-  input: {
-    width: '90%',
-    height: 45,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 15,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
+  optionsWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    gap: 18,
   },
-  button: {
-    backgroundColor: '#2d98da',
+  optionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3A8DFF',
+    borderRadius: 22,
     paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    marginTop: 10,
+    paddingHorizontal: 32,
+    marginBottom: 12,
+    width: 260,
+    justifyContent: 'space-between',
   },
-  buttonText: {
+  optionBtnActive: {
+    backgroundColor: '#3A8DFF',
+  },
+  optionText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  optionTextActive: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
   },
-  methodRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '90%',
-    marginBottom: 15,
-  },
-  methodButton: {
-    flex: 1,
-    backgroundColor: '#d1d8e0',
-    padding: 10,
-    marginHorizontal: 5,
-    borderRadius: 8,
+  circle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 3,
+    borderColor: '#fff',
+    backgroundColor: '#3A8DFF',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  selected: {
-    backgroundColor: '#2d98da',
+  circleActive: {
+    backgroundColor: '#fff',
+    borderColor: '#3A8DFF',
+  },
+  optionBtnAlt: {
+    backgroundColor: '#ffe9ec',
+  },
+  optionBtnActiveAlt: {
+    backgroundColor: '#ffe9ec',
+    borderWidth: 2,
+    borderColor: '#FF6B81',
+  },
+  optionTextAlt: {
+    color: '#222',
+    fontWeight: 'bold',
+  },
+  optionTextActiveAlt: {
+    color: '#FF6B81',
+    fontWeight: 'bold',
+  },
+  circleAlt: {
+    backgroundColor: '#ffe9ec',
+    borderColor: '#fff',
+  },
+  circleActiveAlt: {
+    backgroundColor: '#FF6B81',
+    borderColor: '#FF6B81',
   },
 });
 

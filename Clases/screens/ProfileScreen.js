@@ -627,6 +627,16 @@ export default function ProfileScreen({ navigation }) {
       case "adminPanel":
         return (
           <View style={{ marginTop: 10 }}>
+            {/* Botón para ver bitácora de auditoría solo si es admin */}
+            {isAdmin && (
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() => navigation.navigate("AuditLogScreen")}
+              >
+                <Text style={styles.menuButtonText}>Bitácora de auditoría</Text>
+                <Text style={styles.menuArrow}>›</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.menuButton}
               onPress={() => navigation.navigate("ConsultarUsuarios")}
@@ -637,9 +647,18 @@ export default function ProfileScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => navigation.navigate("AEApproveProviders")}
+              onPress={() => navigation.navigate("ProveedorGestion")}
             >
               <Text style={styles.menuButtonText}>Aprobar proveedores</Text>
+              <Text style={styles.menuArrow}>›</Text>
+            </TouchableOpacity>
+
+            {/* Botón para asignar/modificar/revocar roles */}
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => navigation.navigate("RoleChangeScreen")}
+            >
+              <Text style={styles.menuButtonText}>Gestionar roles de usuario</Text>
               <Text style={styles.menuArrow}>›</Text>
             </TouchableOpacity>
 
@@ -763,6 +782,14 @@ export default function ProfileScreen({ navigation }) {
       case "menu":
         return (
           <View style={{ marginTop: 10 }}>
+            {/* Botón para recuperación de cuenta bloqueada */}
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => navigation.navigate("AccountRecoveryScreen")}
+            >
+              <Text style={styles.menuButtonText}>Recuperar cuenta bloqueada</Text>
+              <Text style={styles.menuArrow}>›</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.menuButton}>
               <Text style={styles.menuButtonText}>Retos.</Text>
               <Text style={styles.menuArrow}>›</Text>
@@ -775,6 +802,12 @@ export default function ProfileScreen({ navigation }) {
 
             <TouchableOpacity style={styles.menuButton}>
               <Text style={styles.menuButtonText}>Calendario.</Text>
+              <Text style={styles.menuArrow}>›</Text>
+            </TouchableOpacity>
+
+            {/* Botón AE para acceder a opciones AE */}
+            <TouchableOpacity style={styles.menuButton} onPress={() => navigation.navigate('AEModuleMenu')}>
+              <Text style={styles.menuButtonText}>AE</Text>
               <Text style={styles.menuArrow}>›</Text>
             </TouchableOpacity>
 

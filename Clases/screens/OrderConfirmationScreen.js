@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,20 +7,44 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../../Supabase/supabaseClient';
 
 export default function OrderConfirmationScreen({ navigation, route }) {
   const { cart, direccion } = route.params || {};
   const [loading, setLoading] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [providers, setProviders] = useState([]);
+  const [selectedProviderId, setSelectedProviderId] = useState('');
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const { data, error } = await supabase.from('users').select('id, correo_institucional');
+      if (!error && data) setUsers(data);
+    };
+    const fetchProviders = async () => {
+      const { data, error } = await supabase.from('providers').select('id, nombre_emprendimiento');
+      if (!error && data) setProviders(data);
+    };
+    fetchUsers();
+    fetchProviders();
+  }, []);
 
   const handleConfirmOrder = async () => {
     try {
       setLoading(true);
 
-      // 0. Obtener usuario
-      const userId = await AsyncStorage.getItem('userId');
-      if (!userId) throw new Error('Usuario no autenticado');
+      // Usar el usuario seleccionado
+      const userId = selectedUserId;
+      if (!userId) throw new Error('Debes seleccionar un usuario');
+
+      // Calcular provider_id y total
+      if (!cart || cart.length === 0) throw new Error('El carrito está vacío');
+      let providerId = cart[0]?.provider_id || selectedProviderId;
+      if (!providerId) throw new Error('Debes seleccionar un proveedor');
+      const total = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
 
       // 1. Crear orden
       const { data: order, error: orderError } = await supabase
@@ -28,9 +52,13 @@ export default function OrderConfirmationScreen({ navigation, route }) {
         .insert([
           {
             user_id: userId,
-            delivery_address: direccion,
-            status: 'pendiente',
-            created_at: new Date().toISOString(),
+            provider_id: providerId,
+            total,
+            estado: 'pendiente',
+            punto_entrega: direccion,
+            creado_en: new Date().toISOString(),
+            actualizado_en: new Date().toISOString(),
+            // Puedes agregar metodo_pago, franja_horaria si lo necesitas
           },
         ])
         .select()
@@ -42,17 +70,18 @@ export default function OrderConfirmationScreen({ navigation, route }) {
       for (const item of cart) {
         // 2.1 Validar proveedor inventario
         const { data: inv, error: invError } = await supabase
-          .from('provider_inventory')
-          .select('cantidad_disponible, provider_id')
+          .from('dish_inventory')
+          .select('cantidad, provider_id')
           .eq('dish_id', item.id)
-          .single();
+          .maybeSingle();
 
         if (invError) throw invError;
 
-        if (!inv || inv.cantidad_disponible < item.quantity) {
-          throw new Error(
-            `No hay suficiente inventario para el platillo: ${item.nombre}`
-          );
+        if (!inv) {
+          throw new Error(`No existe inventario para el platillo: ${item.nombre}`);
+        }
+        if (inv.cantidad < item.quantity) {
+          throw new Error(`No hay suficiente inventario para el platillo: ${item.nombre}`);
         }
 
         // 2.2 Insertar item
@@ -62,14 +91,15 @@ export default function OrderConfirmationScreen({ navigation, route }) {
             dish_id: item.id,
             cantidad: item.quantity,
             precio_unitario: item.precio,
+            subtotal: item.precio * item.quantity,
           },
         ]);
 
         // 2.3 Actualizar inventario
         await supabase
-          .from('provider_inventory')
+          .from('dish_inventory')
           .update({
-            cantidad_disponible: inv.cantidad_disponible - item.quantity,
+            cantidad: inv.cantidad - item.quantity,
           })
           .eq('dish_id', item.id);
       }
@@ -93,7 +123,13 @@ export default function OrderConfirmationScreen({ navigation, route }) {
       ]);
 
       Alert.alert('Pedido registrado', 'Tu pedido ha sido registrado exitosamente.');
-      navigation.replace('SuccessScreen');
+      navigation.replace('TwoFactorAuth', {
+        orderId: order.id,
+        userId: selectedUserId,
+        providerId: providerId,
+        total,
+        direccion,
+      });
 
     } catch (err) {
       console.log(err);
@@ -106,6 +142,36 @@ export default function OrderConfirmationScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Confirmar pedido</Text>
+
+      {/* Picker de usuario */}
+      <Text style={styles.subtitle}>Selecciona el usuario:</Text>
+      <View style={{ marginBottom: 16, backgroundColor: '#f3f3f3', borderRadius: 8 }}>
+        <Picker
+          selectedValue={selectedUserId}
+          onValueChange={setSelectedUserId}
+          style={{ height: 50 }}
+        >
+          <Picker.Item label="Selecciona un usuario" value="" />
+          {users.map(u => (
+            <Picker.Item key={u.id} label={u.correo_institucional} value={u.id} />
+          ))}
+        </Picker>
+      </View>
+
+      {/* Picker de proveedor */}
+      <Text style={styles.subtitle}>Selecciona el proveedor:</Text>
+      <View style={{ marginBottom: 16, backgroundColor: '#f3f3f3', borderRadius: 8 }}>
+        <Picker
+          selectedValue={selectedProviderId}
+          onValueChange={setSelectedProviderId}
+          style={{ height: 50 }}
+        >
+          <Picker.Item label="Selecciona un proveedor" value="" />
+          {providers.map(p => (
+            <Picker.Item key={p.id} label={p.nombre_emprendimiento} value={p.id} />
+          ))}
+        </Picker>
+      </View>
 
       <Text style={styles.subtitle}>Dirección: {direccion}</Text>
       <Text style={styles.subtitle}>Productos:</Text>
@@ -128,7 +194,7 @@ export default function OrderConfirmationScreen({ navigation, route }) {
         {loading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.confirmText}>Confirmar pedido</Text>
+          <Text style={styles.confirmText}>Confirmar pedido y pagar</Text>
         )}
       </TouchableOpacity>
     </View>

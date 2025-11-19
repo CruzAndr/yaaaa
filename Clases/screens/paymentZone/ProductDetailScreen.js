@@ -139,7 +139,7 @@ const ProductDetailScreen = ({ route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#5f4bb6',
+    backgroundColor: '#3A8DFF',
   },
 
   headerContainer: {
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   },
   qtyText: {
     fontSize: 18,
-    color: '#5f4bb6',
+    color: '#3A8DFF',
   },
   qtyNumber: {
     fontSize: 16,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   price: {
     fontWeight: 'bold',
     fontSize: 18,
-    color: '#5f4bb6',
+    color: '#3A8DFF',
   },
 
   /* Secciones */
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontWeight: 'bold',
-    color: '#5f4bb6',
+    color: '#3A8DFF',
     fontSize: 15,
     marginBottom: 4,
   },
@@ -257,10 +257,10 @@ const styles = StyleSheet.create({
   },
   heartIcon: {
     fontSize: 22,
-    color: '#5f4bb6',
+    color: '#3A8DFF',
   },
   buyBtn: {
-    backgroundColor: '#5f4bb6',
+    backgroundColor: '#3A8DFF',
     paddingVertical: 12,
     paddingHorizontal: 45,
     borderRadius: 25,
