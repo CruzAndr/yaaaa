@@ -1,3 +1,4 @@
+import ConsultarUsuariosScreen from './screens/ConsultarUsuariosScreen';
 import OrderConfirmationScreen from './screens/OrderConfirmationScreen';
 import CartScreen from './screens/CartScreen';
 import AEInventarioPedidosScreen from '../AE/AEInventarioPedidosScreen';
@@ -31,6 +32,7 @@ import CreatePasswordScreen from './screens/CreatePasswordScreen';
 import SuccessScreen from './screens/SuccessScreen';
 import ProfileIntroScreen from './screens/ProfileIntroScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import SesionesActivasScreen from './screens/SesionesActivasScreen';
 import AEModuleScreen from '../AE/AEModuleScreen';
 import AEMenuGestionScreen from '../AE/AEMenuGestionScreen';
 
@@ -54,11 +56,12 @@ export default function App() {
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Welcome">
           <Stack.Screen name="SecurePaymentScreen" options={{ headerShown: false }} component={SecurePaymentScreen} />
-          <Stack.Screen name="TwoFactorAuthScreen" options={{ headerShown: false }} component={TwoFactorAuthScreen} />
+          <Stack.Screen name="TwoFactorAuth" options={{ headerShown: false }} component={TwoFactorAuthScreen} />
           <Stack.Screen name="SelectAddressScreen" options={{ title: 'Dirección de entrega', headerShown: true }} component={SelectAddressScreen} />
           <Stack.Screen name="OrderConfirmationScreen" options={{ title: 'Confirmar pedido', headerShown: true }} component={OrderConfirmationScreen} />
           <Stack.Screen name="ProfileIntro" options={{ headerShown: false }} component={ProfileIntroScreen} />
           <Stack.Screen name="Profile" options={{ headerShown: false }} component={ProfileScreen} />
+          <Stack.Screen name="SesionesActivas" options={{ title: 'Sesiones activas', headerShown: true }} component={SesionesActivasScreen} />
           <Stack.Screen name="AEModuleMenu" component={AEModuleMenuScreen} options={{ title: 'Módulo AE' }} />
           <Stack.Screen name="AEModule" component={AEModuleScreen} options={{ title: 'Módulo AE' }} />
           <Stack.Screen name="AEMenuGestion" component={AEMenuGestionScreen} options={{ title: 'Gestión de Menús Saludables' }} />
@@ -73,6 +76,9 @@ export default function App() {
           <Stack.Screen name="Login" options={{ headerShown: false }} >
             {props => <LoginScreen {...props} onLogin={handleLogin} />}
           </Stack.Screen>
+          <Stack.Screen name="RecoverPassword" options={{ headerShown: false }} component={require('./screens/RecoverPasswordScreen').default} />
+          <Stack.Screen name="LocalResetCode" options={{ headerShown: false }} component={require('./screens/LocalResetCodeScreen').default} />
+          <Stack.Screen name="LocalChangePassword" options={{ headerShown: false }} component={require('./screens/LocalChangePasswordScreen').default} />
           <Stack.Screen name="Register" options={{ headerShown: false }} component={RegisterScreen} />
           <Stack.Screen name="VerificationMethod" options={{ headerShown: false }} component={VerificationMethodScreen} />
           <Stack.Screen name="EmailCode" options={{ headerShown: false }} component={EmailCodeScreen} />
@@ -87,6 +93,9 @@ export default function App() {
           <Stack.Screen name="CartScreen" options={{ title: 'Carrito', headerShown: true }} component={CartScreen} />
           <Stack.Screen name="ProviderRegister" options={{ title: 'Registro de Proveedor', headerShown: true }} component={ProviderRegisterScreen} />
           <Stack.Screen name="ProveedorGestion" options={{ title: 'Gestión de Proveedores' }} component={ProveedorGestionScreen} />
+          <Stack.Screen name="ConsultarUsuarios" component={ConsultarUsuariosScreen} />
+          <Stack.Screen name="AprobarProveedorScreen" component={ProveedorGestionScreen} />
+          <Stack.Screen name="AprobarPlatillosScreen" component={AEMenuGestionScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </CartProvider>

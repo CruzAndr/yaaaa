@@ -26,23 +26,26 @@ export default function HomeScreen({ navigation }) {
   const [categoriaActiva, setCategoriaActiva] = useState('todos');
   const [showFiltros, setShowFiltros] = useState(false);
   const [filtroActivo, setFiltroActivo] = useState('tienda');
-
   const [platos, setPlatos] = useState([]);
+  const [userRolId, setUserRolId] = useState(null);
 
   // ✔ Cargar nombre
   useEffect(() => {
-    const fetchNombre = async () => {
-      const userId = await AsyncStorage.getItem('userId');
-      if (userId) {
+    const fetchNombreYRol = async () => {
+      const correo = await AsyncStorage.getItem('correo_institucional');
+      if (correo) {
         const { data } = await supabase
           .from('users')
-          .select('nombre_completo')
-          .eq('id', userId)
+          .select('nombre_completo, rol_id')
+          .eq('correo_institucional', correo)
           .single();
-        if (data) setNombreCompleto(data.nombre_completo);
+        if (data) {
+          setNombreCompleto(data.nombre_completo);
+          setUserRolId(data.rol_id);
+        }
       }
     };
-    fetchNombre();
+    fetchNombreYRol();
   }, []);
 
   // ✔ Cargar platos desde la base de datos
@@ -98,6 +101,7 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       <Text style={styles.saludo}>Hola {nombreCompleto || ''}, ¿Qué tal?</Text>
+
 
       {/* 🔍 Buscador */}
       <View style={styles.searchRow}>
@@ -165,7 +169,7 @@ export default function HomeScreen({ navigation }) {
       </ScrollView>
 
       {/* PLATOS FILTRADOS */}
-      <View style={[styles.cardsRow, { marginBottom: 48, flexWrap: 'wrap' }]}>
+      <View style={[styles.cardsRow, { marginBottom: 48, flexWrap: 'wrap' }]}> 
         {platosFiltrados.length === 0 ? (
           <Text style={{ color: '#777', marginTop: 20 }}>No hay platos en esta categoría.</Text>
         ) : (

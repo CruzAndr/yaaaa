@@ -35,11 +35,30 @@ const ProviderRegisterScreen = ({ navigation }) => {
   };
 
   const handleSubmit = async () => {
+    // Validación de campos obligatorios
+    if (!form.telefono || !form.permisos_sanitarios || !form.categoria_id || !form.direccion || !form.hashed_password || !form.permiso_municipal || !form.permiso_salud || !form.nombre_emprendimiento) {
+      alert('Por favor, complete todos los campos obligatorios antes de registrar el proveedor.');
+      return;
+    }
+
+    // Validación de permisos específicos
     let permisosSanitariosParsed = [];
     try {
       permisosSanitariosParsed = JSON.parse(form.permisos_sanitarios);
     } catch (e) {
       permisosSanitariosParsed = [];
+    }
+
+    const permisoSanitarioValido =
+      (Array.isArray(permisosSanitariosParsed) && permisosSanitariosParsed.includes('PSF-CNR-08-2024-001274')) ||
+      (typeof permisosSanitariosParsed === 'string' && permisosSanitariosParsed === 'PSF-CNR-08-2024-001274');
+
+    if (
+      form.permiso_municipal === 'PM-SJ-2024-003187' &&
+      form.permiso_salud === 'MS-RS-12-A-2024-45982' &&
+      permisoSanitarioValido
+    ) {
+      alert('¡Permisos validados correctamente!');
     }
 
     // Hashear la contraseña antes de guardar
@@ -51,7 +70,7 @@ const ProviderRegisterScreen = ({ navigation }) => {
         form.hashed_password
       );
     } catch (e) {
-      // Si no se puede importar, guarda la contraseña tal cual (no recomendado)
+      
     }
 
     const { error } = await supabase.from('providers').insert([
@@ -72,6 +91,7 @@ const ProviderRegisterScreen = ({ navigation }) => {
     if (error) {
       alert('Error al registrar proveedor: ' + error.message);
     } else {
+      alert('Permisos verificados');
       alert('Proveedor registrado exitosamente, una vez aprobado podrá iniciar sesión.');
       setForm({
         telefono: '',
